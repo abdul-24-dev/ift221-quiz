@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IFT 221 Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <!-- Welcome Page -->
+  <div id="welcome" class="text-center bg-white shadow-lg p-8 rounded-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4">🎓 Welcome to IFT 221 Quiz</h1>
+    <p class="mb-6 text-gray-600">Select how many questions you want to attempt:</p>
+    <div class="space-y-3">
+      <button onclick="startQuiz(10)" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">10 Questions</button>
+      <button onclick="startQuiz(25)" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">25 Questions</button>
+      <button onclick="startQuiz(50)" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">50 Questions</button>
+      <button onclick="startQuiz(75)" class="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">75 Questions</button>
+      <button onclick="startQuiz(100)" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">100 Questions</button>
+    </div>
+  </div>
+
+  <!-- Quiz Page -->
+  <div id="quiz" class="hidden w-full max-w-2xl mx-auto p-6">
+    <div id="card"></div>
+    <div class="mt-6 flex justify-between items-center">
+      <button id="prevBtn" onclick="prevQuestion()" class="bg-gray-300 px-4 py-2 rounded disabled:opacity-50">Previous</button>
+      <span id="progress" class="text-gray-600"></span>
+      <button id="nextBtn" onclick="nextQuestion()" class="bg-blue-600 text-white px-4 py-2 rounded">Next</button>
+      <button id="submitBtn" onclick="submitQuiz()" class="hidden bg-green-600 text-white px-4 py-2 rounded">Submit</button>
+    </div>
+  </div>
+
+  <!-- Result Page -->
+  <div id="resultPage" class="hidden text-center bg-white shadow-lg p-8 rounded-lg w-full max-w-md">
+    <h2 id="resultMessage" class="text-2xl font-bold mb-4"></h2>
+    <p id="scoreText" class="text-lg text-gray-700 mb-6"></p>
+    <button onclick="goHome()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">🏠 Home</button>
+  </div>
+
+  <script>
+const allQuestions = [
+      { q: "Which of the following is NOT a basic component of a computer?", options: ["CPU", "Memory", "Keyboard", "Compiler"], answer: 3 },
+      { q: "The brain of the computer is:", options: ["RAM", "CPU", "ROM", "Hard Disk"], answer: 1 },
+      { q: "Which of these is NOT an input device?", options: ["Keyboard", "Scanner", "Printer", "Mouse"], answer: 2 },
+      { q: "Who proposed the Von Neumann architecture?", options: ["Charles Babbage", "John von Neumann", "Alan Turing", "Bill Gates"], answer: 1 },
+      { q: "In Von Neumann architecture, both program instructions and data are stored in:", options: ["ALU", "Registers", "Memory", "Control Unit"], answer: 2 },
+      { q: "Which part of CPU performs arithmetic and logic operations?", options: ["CU", "ALU", "Registers", "Cache"], answer: 1 },
+      { q: "The register that stores the current instruction being executed is:", options: ["MAR", "MDR", "PC", "IR"], answer: 3 },
+      { q: "The Program Counter (PC) is responsible for:", options: ["Storing data permanently", "Holding the next instruction address", "Performing calculations", "Sending data to I/O devices"], answer: 1 },
+      { q: "Which of these is NOT a type of micro-operation?", options: ["Transfer", "Arithmetic", "Logic", "Printing"], answer: 3 },
+      { q: "Which micro-operation shifts bits to the left or right?", options: ["Transfer", "Arithmetic", "Logic", "Shift"], answer: 3 },
+      { q: "The register that holds the memory address being accessed is:", options: ["PC", "MAR", "MDR", "IR"], answer: 1 },
+      { q: "The MDR (Memory Data Register) temporarily stores:", options: ["Memory address", "Instruction opcode", "Data coming from/going to memory", "Next instruction"], answer: 2 },
+      { q: "Which bus carries the actual data between CPU, memory, and I/O devices?", options: ["Address Bus", "Data Bus", "Control Bus", "System Bus"], answer: 1 },
+      { q: "Which bus is used to send memory addresses from CPU to memory?", options: ["Address Bus", "Data Bus", "Control Bus", "Input Bus"], answer: 0 },
+      { q: "Which bus carries timing and control signals?", options: ["Address Bus", "Data Bus", "Control Bus", "Instruction Bus"], answer: 2 },
+      { q: "The three steps of instruction cycle are:", options: ["Input–Output–Process", "Fetch–Decode–Execute", "Save–Load–Exit", "Read–Write–Control"], answer: 1 },
+      { q: "Which addressing mode has the operand inside the instruction itself?", options: ["Direct", "Indirect", "Immediate", "Register"], answer: 2 },
+      { q: "Which addressing mode uses the CPU register to hold the operand?", options: ["Register addressing", "Direct addressing", "Indirect addressing", "Immediate addressing"], answer: 0 },
+      { q: "In one-address instructions, operations are usually performed with:", options: ["MAR", "MDR", "Accumulator", "Stack"], answer: 2 },
+      { q: "Zero-address instructions are typically used in which type of architecture?", options: ["Von Neumann", "Harvard", "Stack-based", "CISC"], answer: 2 },
+
+      { q: "Two-address instructions usually specify:", options: ["Two memory addresses", "One register and one memory location", "Only one operand", "No operand"], answer: 1 },
+      { q: "Which instruction format requires fewer lines of code but is slower?", options: ["RISC", "CISC", "Stack", "Harvard"], answer: 1 },
+      { q: "Which architecture executes one instruction per cycle, making it faster?", options: ["RISC", "CISC", "Von Neumann", "Harvard"], answer: 0 },
+      { q: "An example of a RISC processor is:", options: ["Intel", "AMD", "ARM", "IBM 360"], answer: 2 },
+      { q: "Which memory type is volatile?", options: ["ROM", "RAM", "Hard Disk", "Flash"], answer: 1 },
+      { q: "Which memory is non-volatile and permanent?", options: ["RAM", "Cache", "ROM", "Registers"], answer: 2 },
+      { q: "Which memory is the fastest but smallest?", options: ["RAM", "Cache", "Hard Disk", "Flash"], answer: 1 },
+      { q: "The measure of cache performance is given by:", options: ["Speed ratio", "Clock cycle", "Cache hit ratio", "Bit rate"], answer: 2 },
+      { q: "If cache has 80 hits and 20 misses, the hit ratio is:", options: ["20%", "40%", "80%", "90%"], answer: 2 },
+      { q: "Which memory hierarchy is correct from fastest to slowest?", options: ["Disk → Cache → RAM", "Cache → RAM → Disk", "RAM → Cache → Disk", "Disk → RAM → Cache"], answer: 1 },
+
+      { q: "Parallel processing means:", options: ["Executing many instructions at the same time", "Fetching instructions only", "Single-task execution", "Slower performance"], answer: 0 },
+      { q: "Pipelining allows:", options: ["Overlapping of instruction execution", "Single execution per cycle", "Memory permanent storage", "Only arithmetic tasks"], answer: 0 },
+      { q: "One advantage of pipelining is:", options: ["Slower execution", "More complexity without speed gain", "Increased instruction throughput", "Reduced performance"], answer: 2 },
+      { q: "Which is NOT a hazard in pipelining?", options: ["Structural", "Data", "Control", "Arithmetic"], answer: 3 },
+      { q: "A data hazard occurs when:", options: ["Two instructions use the same data", "CPU overheats", "Memory is full", "The ALU fails"], answer: 0 },
+      { q: "A control hazard is caused by:", options: ["Conditional branches", "Arithmetic errors", "Address bus failure", "Cache misses"], answer: 0 },
+      { q: "Structural hazards occur when:", options: ["Hardware resources conflict", "Program counter fails", "Two CPUs collide", "Cache is full"], answer: 0 },
+      { q: "Which register keeps track of instructions to be executed sequentially?", options: ["MAR", "PC", "MDR", "IR"], answer: 1 },
+      { q: "Which register temporarily stores data coming from memory?", options: ["MAR", "MDR", "IR", "PC"], answer: 1 },
+      { q: "Which unit controls and coordinates all operations in CPU?", options: ["ALU", "CU", "MAR", "Cache"], answer: 1 },
+
+      { q: "In immediate addressing, the operand is:", options: ["Inside instruction", "Inside memory only", "Always in register", "On hard disk"], answer: 0 },
+      { q: "In direct addressing mode, the instruction contains:", options: ["Register operand", "Memory address", "Operand value directly", "Stack reference"], answer: 1 },
+      { q: "Indirect addressing mode points to:", options: ["Operand directly", "Another address holding the operand", "Cache line", "ROM cell"], answer: 1 },
+      { q: "Which addressing mode uses index register plus displacement?", options: ["Immediate", "Direct", "Indexed", "Stack"], answer: 2 },
+      { q: "The accumulator register is mainly used in:", options: ["One-address instruction format", "Two-address format", "Zero-address format", "RISC processors only"], answer: 0 },
+      { q: "In zero-address instructions, operands are usually stored in:", options: ["Registers", "Accumulator", "Stack", "Cache"], answer: 2 },
+      { q: "Which bus is unidirectional?", options: ["Data bus", "Control bus", "Address bus", "Input/Output bus"], answer: 2 },
+      { q: "Which bus is bidirectional?", options: ["Data bus", "Address bus", "Instruction bus", "Power bus"], answer: 0 },
+      { q: "An instruction set is:", options: ["A group of registers", "A group of micro-operations", "The collection of all instructions a CPU can execute", "A storage area in memory"], answer: 2 },
+      { q: "Which instruction set uses fewer, simple instructions?", options: ["CISC", "RISC", "Zero-address", "Two-address"], answer: 1 },
+
+      { q: "Which instruction set supports complex addressing modes?", options: ["CISC", "RISC", "Zero-address", "Harvard"], answer: 0 },
+      { q: "Intel processors are an example of:", options: ["RISC", "CISC", "Stack machines", "Harvard"], answer: 1 },
+      { q: "Which of these is NOT volatile memory?", options: ["RAM", "Cache", "ROM", "Registers"], answer: 2 },
+      { q: "Which of these stores boot instructions permanently?", options: ["RAM", "ROM", "Hard Disk", "Cache"], answer: 1 },
+      { q: "A block diagram of Von Neumann computer includes:", options: ["ALU, CU, Memory, I/O", "Keyboard, Monitor, CPU, GPU", "BIOS, OS, Compiler, RAM", "ALU, Cache, Registers, GPU"], answer: 0 },
+      { q: "The main function of ALU is to:", options: ["Control devices", "Perform arithmetic/logic operations", "Store instructions", "Decode instructions"], answer: 1 },
+      { q: "The Control Unit (CU) does NOT:", options: ["Coordinate CPU operations", "Decode instructions", "Store data permanently", "Send control signals"], answer: 2 },
+      { q: "Registers are located in:", options: ["RAM", "Hard Disk", "CPU", "Cache"], answer: 2 },
+      { q: "Which memory is the slowest but largest?", options: ["Cache", "RAM", "Hard Disk", "Registers"], answer: 2 },
+      { q: "Which component connects CPU, memory, and I/O devices?", options: ["Buses", "Registers", "Cables", "BIOS"], answer: 0 },
+
+      { q: "The main advantage of RISC architecture is:", options: ["More complex instructions", "One instruction per cycle (fast)", "Slower execution", "Less efficiency"], answer: 1 },
+      { q: "Which of the following is true about CISC?", options: ["Simple instructions only", "Many instructions and addressing modes", "Requires fewer transistors", "Always faster than RISC"], answer: 1 },
+      { q: "The memory closest to CPU is:", options: ["Hard Disk", "Cache", "RAM", "ROM"], answer: 1 },
+      { q: "The smallest unit of data in memory is:", options: ["Bit", "Byte", "Word", "Register"], answer: 0 },
+      { q: "1 Byte is equal to:", options: ["4 bits", "8 bits", "16 bits", "32 bits"], answer: 1 },
+      { q: "Which storage device is magnetic?", options: ["SSD", "Flash", "Hard Disk", "ROM"], answer: 2 },
+      { q: "SSDs are faster because they use:", options: ["Mechanical platters", "Magnetic storage", "Flash memory chips", "Optical lasers"], answer: 2 },
+      { q: "Which unit decodes instructions?", options: ["ALU", "CU", "Register", "Cache"], answer: 1 },
+      { q: "Which memory is used for booting process?", options: ["RAM", "ROM", "Cache", "Flash"], answer: 1 },
+      { q: "Which is NOT a type of micro-operation?", options: ["Arithmetic", "Logic", "Shift", "Compilation"], answer: 3 },
+
+      { q: "In pipelining, a stall happens because of:", options: ["Cache hit", "Hazard", "ALU speed", "Faster clock"], answer: 1 },
+      { q: "Which of these is an example of parallel processing?", options: ["Single-core CPU", "Multi-core processor", "Cache access", "Boot sequence"], answer: 1 },
+      { q: "Which is NOT an example of output device?", options: ["Printer", "Speaker", "Monitor", "Mouse"], answer: 3 },
+      { q: "Which device is both input and output?", options: ["Keyboard", "Touchscreen", "Printer", "Microphone"], answer: 1 },
+      { q: "The instruction register (IR) stores:", options: ["Next instruction address", "Current instruction", "Data operand", "Control signal"], answer: 1 },
+      { q: "Which of the following is volatile?", options: ["Hard Disk", "ROM", "RAM", "Flash"], answer: 2 },
+      { q: "In fetch-decode-execute, the fetch stage involves:", options: ["Executing operation", "Getting instruction from memory", "Performing arithmetic", "Storing data"], answer: 1 },
+      { q: "Which hazard occurs due to insufficient hardware resources?", options: ["Control hazard", "Data hazard", "Structural hazard", "Timing hazard"], answer: 2 },
+      { q: "Which addressing mode uses a base register plus displacement?", options: ["Immediate", "Direct", "Relative", "Indexed"], answer: 3 },
+      { q: "A stack works on:", options: ["FIFO principle", "LIFO principle", "Random access", "Sequential access"], answer: 1 },
+
+      { q: "The Harvard architecture differs from Von Neumann by:", options: ["Using single memory for data and instructions", "Using separate memory for data and instructions", "Having no control unit", "Using only registers"], answer: 1 },
+      { q: "The register that keeps track of function calls and returns is:", options: ["PC", "SP (Stack Pointer)", "MAR", "IR"], answer: 1 },
+      { q: "Which is an advantage of Harvard architecture?", options: ["Slower execution", "Reduced memory bandwidth", "Parallel instruction and data access", "No control unit needed"], answer: 2 },
+      { q: "Which is NOT a feature of RISC?", options: ["Simple instructions", "Fixed instruction length", "Microcoded complex instructions", "Load/store architecture"], answer: 2 },
+      { q: "Which pipeline hazard is caused by branches?", options: ["Data hazard", "Control hazard", "Structural hazard", "Memory hazard"], answer: 1 },
+      { q: "The time taken to access memory is called:", options: ["Memory latency", "Memory hit ratio", "Cycle rate", "Bandwidth"], answer: 0 },
+      { q: "Which cache mapping technique is simplest?", options: ["Fully associative", "Direct mapping", "Set associative", "Random mapping"], answer: 1 },
+      { q: "The ALU mainly deals with:", options: ["Arithmetic and logic", "Control signals", "Instruction decoding", "Data storage"], answer: 0 },
+      { q: "A compiler translates:", options: ["Machine code to high-level language", "High-level language to machine code", "Binary to decimal", "Assembly to English"], answer: 1 },
+      { q: "Which register is used to point to the top of the stack?", options: ["PC", "MAR", "SP", "MDR"], answer: 2 },
+
+      { q: "The pipeline speedup ideally equals:", options: ["Number of stages", "Number of registers", "Clock speed", "Cache size"], answer: 0 },
+      { q: "Which is faster to access?", options: ["Cache", "RAM", "Disk", "ROM"], answer: 0 },
+      { q: "Boot instructions are stored in:", options: ["RAM", "Cache", "ROM", "Hard Disk"], answer: 2 },
+      { q: "A control unit that uses microinstructions stored in memory is:", options: ["Hardwired CU", "Microprogrammed CU", "Cache CU", "Stack CU"], answer: 1 },
+      { q: "Hardwired CU is:", options: ["Slower, flexible", "Faster, less flexible", "Always microcoded", "Not in CPUs"], answer: 1 },
+      { q: "Which type of memory is used in cache?", options: ["SRAM", "DRAM", "Flash", "Magnetic"], answer: 0 },
+      { q: "Which type of memory is used in RAM modules?", options: ["SRAM", "DRAM", "Flash", "ROM"], answer: 1 },
+      { q: "The smallest memory unit accessible by CPU is:", options: ["Byte", "Word", "Bit", "Register"], answer: 0 },
+      { q: "An instruction with no operands is:", options: ["Zero-address", "One-address", "Two-address", "Three-address"], answer: 0 },
+      { q: "Which addressing mode is mostly used for branching?", options: ["Indexed", "Relative", "Immediate", "Stack"], answer: 1 },
+    ];
+
+
+    let questions = [];
+    let current = 0;
+    const userAnswers = [];
+
+    function shuffleArray(arr) {
+      return arr.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz(num) {
+      document.getElementById('welcome').classList.add('hidden');
+      document.getElementById('quiz').classList.remove('hidden');
+      document.getElementById('resultPage').classList.add('hidden');
+      questions = shuffleArray([...allQuestions]).slice(0, num);
+      current = 0;
+      renderQuestion(current);
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+    }
+
+    function renderQuestion(i) {
+      const q = questions[i];
+      const card = document.getElementById('card');
+      card.innerHTML = `
+        <div class="p-6 bg-white rounded-lg shadow-sm">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-sm text-gray-500">Question <span class="font-medium">${i+1}</span> of <span class="font-medium">${questions.length}</span></div>
+              <h2 class="mt-3 text-lg font-semibold text-gray-800">${escapeHtml(q.q)}</h2>
+            </div>
+          </div>
+          <div class="mt-5 space-y-3">
+            ${q.options.map((opt, idx) => {
+              const checked = userAnswers[i] === idx ? 'checked' : '';
+              return `
+                <label class="block border rounded-lg p-3 cursor-pointer hover:bg-gray-50 ${userAnswers[i]===idx? 'ring-2 ring-blue-200':''}">
+                  <input type="radio" name="q${i}" value="${idx}" class="mr-3" ${checked} onchange="selectOption(${i}, ${idx})" />
+                  <span class="align-middle">${escapeHtml(opt)}</span>
+                </label>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('prevBtn').disabled = i === 0;
+      document.getElementById('nextBtn').style.display = i === questions.length - 1 ? 'none' : 'inline-block';
+      document.getElementById('submitBtn').classList.toggle('hidden', i !== questions.length - 1);
+      document.getElementById('progress').innerText = `Q${i+1} / ${questions.length}`;
+    }
+
+    function selectOption(qIndex, optionIndex) {
+      userAnswers[qIndex] = optionIndex;
+    }
+
+    function nextQuestion() {
+      if (current < questions.length - 1) {
+        current++;
+        renderQuestion(current);
+      }
+    }
+
+    function prevQuestion() {
+      if (current > 0) {
+        current--;
+        renderQuestion(current);
+      }
+    }
+
+    function submitQuiz() {
+      let score = 0;
+      questions.forEach((q, idx) => {
+        if (userAnswers[idx] === q.answer) score++;
+      });
+
+      document.getElementById('quiz').classList.add('hidden');
+      document.getElementById('resultPage').classList.remove('hidden');
+
+      const percent = (score / questions.length) * 100;
+      let message = "Keep practicing! 💡";
+      if (percent >= 80) message = "🎉 Congratulations! Excellent performance!";
+      else if (percent >= 50) message = "👍 Good job! You passed.";
+      
+      document.getElementById('resultMessage').innerText = message;
+      document.getElementById('scoreText').innerText = `You scored ${score} out of ${questions.length} (${percent.toFixed(1)}%)`;
+    }
+
+    function goHome() {
+      document.getElementById('welcome').classList.remove('hidden');
+      document.getElementById('quiz').classList.add('hidden');
+      document.getElementById('resultPage').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
